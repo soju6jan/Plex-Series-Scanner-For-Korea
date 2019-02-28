@@ -20,7 +20,7 @@ try:
     import logging
     import logging.handlers
     logger = logging.getLogger('sjva_scanner')
-    logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.DEBUG) 
     formatter = logging.Formatter(u'[%(asctime)s|%(levelname)s] : %(message)s')
     #file_max_bytes = 10 * 1024 * 1024 
     filename = os.path.join(os.path.dirname( os.path.abspath( __file__ ) ), '../../', 'Logs', 'sjva.scanner.korea.tv.log')
@@ -46,6 +46,17 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
     if len(paths) == 1 and len(paths[0]) == 0:
         return
     name, year_path = VideoFiles.CleanName(paths[0])
+    tmp = os.path.split(path)
+    logger.debug(tmp)
+    season_num = None
+    if len(tmp) == 2 and tmp[0] != '': 
+        try:
+            match = re.search(r'(?P<season_num>\d{1,4})\s*((?P<season_title>.*?))?', tmp[1], re.IGNORECASE)
+            if match:
+                season_num = match.group('season_num')
+                logger.debug('- season_num:%s', season_num)
+        except:
+            season_num = None
     logger.debug('- show(by path) name:%s year:%s', name, year_path)
     logger.debug('- files count : %s', len(files))
     for i in files:
@@ -58,7 +69,10 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
                 if match:
                     season = int(match.group('season')) if match.group('season') is not None else 1
                     episode = int(match.group('ep'))
-                    tv_show = Media.Episode(name, season, episode, '', year_path)
+                    if season_num is None:
+                        tv_show = Media.Episode(name, season, episode, '', year_path)
+                    else:
+                        tv_show = Media.Episode(name, season_num, episode, '', year_path)
                     tv_show.display_offset = 0
                     tv_show.parts.append(i)
                     mediaList.append(tv_show)
@@ -74,7 +88,10 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
                         month = int(match.group('month'))
                         day = int(match.group('day'))
                         tmp = '%d-%02d-%02d' % (year, month, day)
-                        tv_show = Media.Episode(name, year, None, None, None)
+                        if season_num is None:
+                            tv_show = Media.Episode(name, year, None, None, None)
+                        else:
+                            tv_show = Media.Episode(name, season_num, None, None, None)
                         #tv_show = Media.Episode(name, year, tmp, None, year)
                         tv_show.released_at = tmp
                         tv_show.parts.append(i)
@@ -83,7 +100,7 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
                         tempDone = True
                         break
             if tempDone == False:
-                logger.error(' NOT APPEND!!')
+                logger.debug(' NOT APPEND!!')
         except Exception, e:
             logger.error(e)
     if shouldStack:
