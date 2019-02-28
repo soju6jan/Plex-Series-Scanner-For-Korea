@@ -336,7 +336,11 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
               break
           
         if done == False:
-          print "Got nothing for:", file
+          try:
+            print "Got nothing for:", file
+          except:
+            print "Got nothing for:"
+            
 
   # Stack the results.
   if shouldStack:
