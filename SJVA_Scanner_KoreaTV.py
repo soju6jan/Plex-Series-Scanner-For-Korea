@@ -22,10 +22,11 @@ try:
     logger = logging.getLogger('sjva_scanner')
     logger.setLevel(logging.DEBUG) 
     formatter = logging.Formatter(u'[%(asctime)s|%(levelname)s] : %(message)s')
-    #file_max_bytes = 10 * 1024 * 1024 
+    file_max_bytes = 1 * 1024 * 1024 
     filename = os.path.join(os.path.dirname( os.path.abspath( __file__ ) ), '../../', 'Logs', 'sjva.scanner.korea.tv.log')
-    fileHandler = logging.FileHandler(filename, encoding='utf8')
+    #fileHandler = logging.FileHandler(filename, encoding='utf8')
     #fileHandler = logging.handlers.RotatingFileHandler(filename=filename), maxBytes=file_max_bytes, backupCount=5, encoding='euc-kr')
+    fileHandler = logging.handlers.RotatingFileHandler(filename=filename, maxBytes=file_max_bytes, backupCount=5, encoding='utf8', delay=True)
     fileHandler.setFormatter(formatter)
     logger.addHandler(fileHandler)
 except:
