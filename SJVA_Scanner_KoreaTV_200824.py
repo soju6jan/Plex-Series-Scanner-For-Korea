@@ -22,10 +22,11 @@ try:
     logger = logging.getLogger('sjva_scanner')
     logger.setLevel(logging.DEBUG) 
     formatter = logging.Formatter(u'[%(asctime)s|%(levelname)s] : %(message)s')
-    #file_max_bytes = 10 * 1024 * 1024 
+    file_max_bytes = 1 * 1024 * 1024 
     filename = os.path.join(os.path.dirname( os.path.abspath( __file__ ) ), '../../', 'Logs', 'sjva.scanner.korea.tv.log')
-    fileHandler = logging.FileHandler(filename, encoding='utf8')
+    #fileHandler = logging.FileHandler(filename, encoding='utf8')
     #fileHandler = logging.handlers.RotatingFileHandler(filename=filename), maxBytes=file_max_bytes, backupCount=5, encoding='euc-kr')
+    fileHandler = logging.handlers.RotatingFileHandler(filename=filename, maxBytes=file_max_bytes, backupCount=5, encoding='utf8', delay=True)
     fileHandler.setFormatter(formatter)
     logger.addHandler(fileHandler)
 except:
@@ -67,17 +68,12 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
             for rx in episode_regexps:
                 match = re.search(rx, file, re.IGNORECASE)
                 if match:
-                    # 파일명에 시즌 번호가 있다면 파일명 우선
-                    if match.group('season') is not None:
-                        season = int(match.group('season'))
-                    else:
-                        #파일명에 시즌표시가 없다.
-                        if season_num is not None:  # 폴더에 시즌 번호가 있다면..
-                            season = season_num
-                        else:
-                            season = 1
+                    season = int(match.group('season')) if match.group('season') is not None else 1
                     episode = int(match.group('ep'))
-                    tv_show = Media.Episode(name, season, episode, '', year_path)
+                    if season_num is None:
+                        tv_show = Media.Episode(name, season, episode, '', year_path)
+                    else:
+                        tv_show = Media.Episode(name, season_num, episode, '', year_path)
                     tv_show.display_offset = 0
                     tv_show.parts.append(i)
                     mediaList.append(tv_show)
